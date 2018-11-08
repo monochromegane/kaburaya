@@ -32,13 +32,29 @@ func (q *queue) full() bool {
 }
 
 func (q *queue) empty() bool {
+	defer q.mu.RUnlock()
+	q.mu.RLock()
+
 	return q.counter == 0
 }
 
 func (q *queue) enqueue() {
+	defer q.mu.Unlock()
+	q.mu.Lock()
+
 	q.counter++
 }
 
 func (q *queue) dequeue() {
+	defer q.mu.Unlock()
+	q.mu.Lock()
+
 	q.counter--
+}
+
+func (q *queue) count() int {
+	defer q.mu.RUnlock()
+	q.mu.RLock()
+
+	return q.counter
 }

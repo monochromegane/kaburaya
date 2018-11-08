@@ -16,10 +16,10 @@ type queueController struct {
 func (c *queueController) Compute(current float64) float64 {
 	// TODO: Be smart
 	cur := int(current)
-	if cur > c.previous {
+	if cur >= c.previous {
 		c.previous = cur
 		return 1.0
 	}
 	c.previous = cur
-	return 0.0
+	return -1.0
 }

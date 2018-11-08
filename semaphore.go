@@ -7,6 +7,7 @@ import (
 // Semaphore represents an elastic semaphore.
 type Semaphore struct {
 	controller Controller
+	reporter   Reporter
 	ch         *elasticChannel
 	done       chan struct{}
 }
@@ -15,6 +16,7 @@ type Semaphore struct {
 func NewSem(duration time.Duration) *Semaphore {
 	sem := &Semaphore{
 		controller: newQueueController(),
+		reporter:   newCPUStabilityReporter(3),
 		ch:         newElasticChannel(1),
 		done:       make(chan struct{}),
 	}
@@ -44,7 +46,15 @@ func (s *Semaphore) adjust(duration time.Duration) {
 	for {
 		select {
 		case <-t.C:
-			inc := s.controller.Compute(float64(s.ch.queue.count()))
+			sd, err := s.reporter.Report()
+			if err != nil {
+				break
+			}
+			if sd < 5.0 { // TODO: Optimize or parametize
+				break
+			}
+			count := s.ch.queue.count()
+			inc := s.controller.Compute(float64(count))
 			s.ch.incrementLimit(int(inc))
 		case <-s.done:
 			t.Stop()

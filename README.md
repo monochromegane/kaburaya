@@ -1,4 +1,4 @@
-# Kaburaya
+# Kaburaya [![Build Status](https://travis-ci.org/monochromegane/kaburaya.svg?branch=master)](https://travis-ci.org/monochromegane/kaburaya)
 
 WIP.
 

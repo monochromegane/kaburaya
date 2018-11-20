@@ -1,6 +1,7 @@
 package kaburaya
 
 import (
+	"math"
 	"time"
 )
 
@@ -15,8 +16,8 @@ type Semaphore struct {
 // NewSem returns a semaphore.
 func NewSem(duration time.Duration) *Semaphore {
 	sem := &Semaphore{
-		controller: newQueueController(),
-		reporter:   newCPUStabilityReporter(3),
+		controller: newDynamicTargetController(newPIDController(0.0, 0.1, 0.5, 0.5)),
+		reporter:   newCPUReporter(),
 		ch:         newElasticChannel(1),
 		done:       make(chan struct{}),
 	}
@@ -46,19 +47,22 @@ func (s *Semaphore) adjust(duration time.Duration) {
 	for {
 		select {
 		case <-t.C:
-			sd, err := s.reporter.Report()
+			usage, err := s.reporter.Report()
 			if err != nil {
 				break
 			}
-			if sd < 5.0 { // TODO: Optimize or parametize
-				break
-			}
-			count := s.ch.queue.count()
-			inc := s.controller.Compute(float64(count))
-			s.ch.incrementLimit(int(inc))
+			inc := s.controller.Compute(usage)
+			s.ch.incrementLimit(round(inc))
 		case <-s.done:
 			t.Stop()
 			break
 		}
 	}
+}
+
+func round(n float64) int {
+	if n > 0.0 {
+		return int(math.Ceil(n))
+	}
+	return int(math.Floor(n))
 }

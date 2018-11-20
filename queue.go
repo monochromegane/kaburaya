@@ -21,6 +21,9 @@ func (q *queue) incrementLimit(n int) int {
 	q.mu.Lock()
 
 	q.limit += n
+	if q.limit < 1 {
+		q.limit = 1
+	}
 	return q.limit
 }
 

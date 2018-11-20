@@ -15,6 +15,28 @@ const (
 	statFile = "/proc/stat"
 )
 
+type cpuReporter struct {
+	previous *linuxproc.Stat
+}
+
+func newCPUReporter() *cpuReporter {
+	return &cpuReporter{}
+}
+
+func (r *cpuReporter) Report() (float64, error) {
+	return r.usage()
+}
+
+func (r *cpuReporter) usage() (float64, error) {
+	current, err := stats()
+	if err != nil {
+		return 0.0, err
+	}
+	usage := usage(r.previous, current)
+	r.previous = current
+	return usage, nil
+}
+
 type cpuStabilityReporter struct {
 	previous *linuxproc.Stat
 	span     int

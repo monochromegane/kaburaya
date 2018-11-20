@@ -50,3 +50,44 @@ func (c *pidController) Compute(feedback float64) float64 {
 
 	return (c.kp * e) + (c.ki * c.i) + (c.kd * d)
 }
+
+type dynamicTargetController struct {
+	controller *pidController
+	previous   float64
+	changeRate float64
+}
+
+func newDynamicTargetController(controller *pidController) *dynamicTargetController {
+	return &dynamicTargetController{
+		controller: controller,
+		previous:   0.01,
+		changeRate: 0.3,
+	}
+}
+
+const defaultPrevious = 0.01
+
+func (c *dynamicTargetController) Compute(feedback float64) float64 {
+	previous := c.previous
+	if previous == 0.0 {
+		previous = defaultPrevious // Avoid zero div
+	}
+	changeRate := (feedback - previous) / previous
+	c.previous = feedback
+
+	if changeRate == 0.0 {
+		c.controller.i = 0.0
+		if feedback != 0.0 {
+			c.controller.target = feedback - 2.0
+		}
+	} else if changeRate > c.changeRate || changeRate < -c.changeRate {
+		c.controller.i = 0.0
+		if feedback == 0.0 {
+			c.controller.target = -100.0
+		} else {
+			c.controller.target = feedback + 2.0
+		}
+	}
+
+	return c.controller.Compute(feedback)
+}

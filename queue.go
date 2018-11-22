@@ -31,7 +31,7 @@ func (q *queue) full() bool {
 	defer q.mu.RUnlock()
 	q.mu.RLock()
 
-	return q.counter == q.limit
+	return q.counter >= q.limit
 }
 
 func (q *queue) empty() bool {

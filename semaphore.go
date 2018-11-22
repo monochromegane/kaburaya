@@ -11,6 +11,7 @@ type Semaphore struct {
 	reporter   Reporter
 	ch         *elasticChannel
 	done       chan struct{}
+	Recorder   Recorder
 }
 
 // NewSem returns a semaphore.
@@ -52,7 +53,10 @@ func (s *Semaphore) adjust(duration time.Duration) {
 				break
 			}
 			inc := s.controller.Compute(usage)
-			s.ch.incrementLimit(round(inc))
+			l := s.ch.incrementLimit(round(inc))
+			if s.Recorder != nil {
+				s.Recorder.Record([]float64{usage, float64(l)})
+			}
 		case <-s.done:
 			t.Stop()
 			break

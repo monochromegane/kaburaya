@@ -15,9 +15,9 @@ type Semaphore struct {
 }
 
 // NewSem returns a semaphore.
-func NewSem(duration time.Duration) *Semaphore {
+func NewSem(duration time.Duration, gain float64) *Semaphore {
 	sem := &Semaphore{
-		controller: newDynamicTargetController(newPIDController(0.0, 0.1, 0.5, 0.5)),
+		controller: newDynamicTargetController(newPIDController(0.0, gain, gain, gain)),
 		reporter:   newCPUReporter(),
 		ch:         newElasticChannel(1),
 		done:       make(chan struct{}),

@@ -7,7 +7,7 @@ Kaburaya optimize the number of goroutines by feedback control. It provides elas
 ## Usage
 
 ```go
-sem := kaburaya.NewSem(100 * time.Millisecond)
+sem := kaburaya.NewSem(100*time.Millisecond, 0.1)
 var wg sync.WaitGroup
 for // Something condition {
 	wg.Add(1)

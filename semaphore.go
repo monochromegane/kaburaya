@@ -9,7 +9,7 @@ import (
 type Semaphore struct {
 	controller Controller
 	reporter   Reporter
-	ch         *elasticChannel
+	ch         *elasticSemaphore
 	done       chan struct{}
 	Recorder   Recorder
 }
@@ -19,7 +19,7 @@ func NewSem(duration time.Duration, gain float64) *Semaphore {
 	sem := &Semaphore{
 		controller: newDynamicTargetController(newPIDController(0.0, gain, gain, gain)),
 		reporter:   newCPUReporter(),
-		ch:         newElasticChannel(1),
+		ch:         newElasticSemaphore(1),
 		done:       make(chan struct{}),
 	}
 	go sem.adjust(duration)
@@ -29,18 +29,17 @@ func NewSem(duration time.Duration, gain float64) *Semaphore {
 // Wait decrements semaphore. If semaphore will be negative,
 // it blocks the process.
 func (s *Semaphore) Wait() {
-	s.ch.send <- struct{}{}
+	s.ch.wait()
 }
 
 // Signal increments semaphore.
 func (s *Semaphore) Signal() {
-	<-s.ch.receive
+	s.ch.signal()
 }
 
 // Stop finalize resources.
 func (s *Semaphore) Stop() {
 	s.done <- struct{}{}
-	s.ch.stop()
 }
 
 func (s *Semaphore) adjust(duration time.Duration) {

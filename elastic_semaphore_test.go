@@ -89,8 +89,8 @@ func TestElasticSemaphoreIncrementLimitPositiveWithBlocking(t *testing.T) {
 		t.Errorf("elasticSemaphore.incrementLimit should change the limit to %d, but it changes to %d.", limit+inc, newLimit)
 	}
 
-	if sem.counter != 1 {
-		t.Errorf("elasticSemaphore.incrementLimit should change the counter to %d, but it changes to %d.", 1, sem.counter)
+	if sem.counter != 0 {
+		t.Errorf("elasticSemaphore.incrementLimit should change the counter to %d, but it changes to %d.", 0, sem.counter)
 	}
 }
 

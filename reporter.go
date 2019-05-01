@@ -47,6 +47,9 @@ func usage(previous, current *linuxproc.Stat) float64 {
 	n := current.CPUStatAll.Nice - previous.CPUStatAll.Nice
 	s := current.CPUStatAll.System - previous.CPUStatAll.System
 	i := current.CPUStatAll.Idle - previous.CPUStatAll.Idle
+	if u == 0 && n == 0 && s == 0 && i == 0 {
+		return 0.0
+	}
 
 	return (float64(u+n+s) / float64(u+n+s+i)) * 100
 }
